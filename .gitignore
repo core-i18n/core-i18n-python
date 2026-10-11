@@ -55,6 +55,7 @@ cover/
 # Translations
 *.mo
 *.pot
+!core_i18n/locale/**/*.mo
 
 # Django stuff:
 *.log
