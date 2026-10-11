@@ -1,13 +1,17 @@
 # core-i18n-python
 
-Python implementation of [core-i18n](https://github.com/core-i18n/core-i18n),
-the standard dictionary of pre-translated UI strings.
+Python bindings for the system
+[core-i18n](https://github.com/core-i18n/core-i18n) C library.
 
-## Install
+## Requirements
 
 ```sh
-python -m pip install core-i18n
+python -m pip install core-i18n-python
 ```
+
+Install the core-i18n C library and its language catalogs separately using
+your operating system's package manager. This Python package does not bundle
+translation catalogs.
 
 ## Usage
 
@@ -17,13 +21,11 @@ from core_i18n import gettext
 print(gettext("Cancel"))
 ```
 
-The current language is selected using the standard gettext environment
-variables (`LANGUAGE`, `LC_ALL`, `LC_MESSAGES`, and `LANG`). Unknown messages
-and unavailable translations are returned unchanged. The bundled catalogs
-cover the languages provided by the upstream library.
+The system library selects the current language and returns unknown messages
+unchanged.
 
-To load catalogs from another directory instead, set
-`CORE_I18N_LOCALEDIR=/path/to/locale` or call `set_localedir()`:
+To override the system library's locale catalog directory, call
+`set_localedir()`:
 
 ```python
 from core_i18n import gettext, set_localedir
@@ -32,6 +34,6 @@ set_localedir("/path/to/locale")
 print(gettext("Cancel"))
 ```
 
-`core_i18n_gettext` and `core_i18n_set_localedir` are also available as
-names matching the C library API. Call `set_localedir(None)` to restore the
-bundled catalogs (or the environment override).
+`core_i18n_gettext` and `core_i18n_set_localedir` are also available as names
+matching the C library API. The shared library is loaded lazily when either
+function is first called.

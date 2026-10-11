@@ -3,7 +3,7 @@ requires = ["setuptools>=78.1.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "core-i18n"
+name = "core-i18n-python"
 version = "0.1.0"
 description = "Pre-translated UI strings for modern applications"
 readme = "README.md"
@@ -16,6 +16,3 @@ classifiers = [
 
 [tool.setuptools.packages.find]
 include = ["core_i18n*"]
-
-[tool.setuptools.package-data]
-core_i18n = ["locale/*/LC_MESSAGES/core-i18n.mo"]

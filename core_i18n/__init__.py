@@ -1,26 +1,44 @@
-import gettext as _gettext
+import ctypes
+import ctypes.util
 import os
-from pathlib import Path
 from typing import Optional, Union
 
-_DOMAIN = "core-i18n"
-_BUNDLED_LOCALEDIR = Path(__file__).parent / "locale"
-_localedir: Optional[str] = None
+_library = None
 
 
-def set_localedir(directory: Optional[Union[str, os.PathLike]] = None) -> None:
-    """Set the directory containing gettext catalogs, or reset to the default."""
-    global _localedir
-    _localedir = os.fspath(directory) if directory is not None else None
+def _get_library():
+    global _library
+    if _library is None:
+        library_name = ctypes.util.find_library("core-i18n")
+        if library_name is None:
+            raise ImportError(
+                "The core-i18n shared library was not found. "
+                "Install the system core-i18n library before using this package."
+            )
+        try:
+            _library = ctypes.CDLL(library_name)
+        except OSError as error:
+            raise ImportError(
+                "The core-i18n shared library could not be loaded."
+            ) from error
+
+        _library.core_i18n_gettext.argtypes = [ctypes.c_char_p]
+        _library.core_i18n_gettext.restype = ctypes.c_char_p
+        _library.core_i18n_set_localedir.argtypes = [ctypes.c_char_p]
+        _library.core_i18n_set_localedir.restype = None
+    return _library
 
 
 def gettext(message: str) -> str:
-    """Translate a message for the current locale, returning it unchanged if absent."""
-    localedir = _localedir
-    if localedir is None:
-        localedir = os.environ.get("CORE_I18N_LOCALEDIR") or str(_BUNDLED_LOCALEDIR)
-    translation = _gettext.translation(_DOMAIN, localedir=localedir, fallback=True)
-    return translation.gettext(message)
+    """Translate a message using the system core-i18n library."""
+    translated = _get_library().core_i18n_gettext(message.encode("utf-8"))
+    return translated.decode("utf-8")
+
+
+def set_localedir(directory: Optional[Union[str, os.PathLike]] = None) -> None:
+    """Set the locale catalog directory through the system core-i18n library."""
+    path = os.fsencode(directory) if directory is not None else None
+    _get_library().core_i18n_set_localedir(path)
 
 
 core_i18n_gettext = gettext
